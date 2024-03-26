@@ -1,0 +1,38 @@
+/* /App.razor.rz.scp.css */
+main[b-nyf0rf9pk3] {
+    max-width: 800px;
+    height: 600px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+/* /InputFileButton.razor.rz.scp.css */
+
+label[b-dfjhlhkbrp] {
+    font-family: var(--ig-font-family);
+    font-weight: var(--ig-button-font-weight);
+    color: hsl(var(--ig-surface-100));
+    background: hsl(var(--ig-primary-500));
+    border-radius: 4px;
+    padding: 0 12px;
+    height: 38px;
+    line-height: 38px;
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all .15s ease-in-out;
+}
+
+    label:hover[b-dfjhlhkbrp], label:focus[b-dfjhlhkbrp] {
+        background: hsl(var(--ig-primary-600));
+    }
+
+    label:focus[b-dfjhlhkbrp] {
+        box-shadow: 0 0 0 .25rem hsl(var(--ig-primary-200));
+    }
+
+    label[b-dfjhlhkbrp]  input {
+        display: none;
+    }
