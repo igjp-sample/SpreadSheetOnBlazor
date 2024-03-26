@@ -1,0 +1,64 @@
+﻿@inject IJSRuntime JSRuntime
+
+<main>
+
+    <div>
+        <InputFileButton OnFileSelected="OnFileSelected" Accept=".xlsx">
+            アップロード
+        </InputFileButton>
+
+        <IgbButton @onclick="OnClickDownload">
+            ダウンロード
+        </IgbButton>
+
+    </div>
+
+    @*
+    Ignite UI for jQuery の SpreadSheet をラップした Razor コンポーネントです。
+    実装の詳細については、SpreadSheet.razor および SpreadSheet.razor.js を参照してください。
+    *@
+    <SpreadSheet @ref="_spreadsheet" Width="100%" Height="100%" />
+
+</main>
+
+@code
+{
+    /// <summary>
+    /// SpreadSheet Razor コンポーネントへの参照です。
+    /// </summary>
+    private SpreadSheet? _spreadsheet;
+
+    /// <summary>
+    /// [アップロード] ボタンがクリックされ、ファイルが選択されたときに呼び出されます。<br/>
+    /// 選択されたファイルを読み込み、SpreadSheet に表示します。
+    /// </summary>
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        if (_spreadsheet is null) return;
+
+        // 選択されたファイルの内容を byte 配列に読み込みます。
+        var buff = new byte[e.File.Size];
+        using var stream = e.File.OpenReadStream();
+        await stream.ReadAsync(buff, 0, (int)e.File.Size);
+
+        // SpreadSheet にファイルの内容を読み込みます。
+        await _spreadsheet.LoadAsync(buff);
+    }
+
+    /// <summary>
+    /// [ダウンロード] ボタンがクリックされたときに呼び出されます。<br/>
+    /// SpreadSheet の内容を .xlsx 形式でダウンロードします。
+    /// </summary>
+    /// <returns></returns>
+    private async Task OnClickDownload()
+    {
+        if (_spreadsheet is null) return;
+
+        // SpreadSheet の内容を .xlsx 形式の byte 配列で取得します。
+        var data = await _spreadsheet.SaveAsync();
+
+        // 取得した byte 配列を .xlsx 形式でブラウザにダウンロードさせます。
+        // (ブラウザへのダウンロード処理は https://www.nuget.org/packages/Toolbelt.Blazor.InvokeDownloadAsync を使用しています)
+        await JSRuntime.InvokeDownloadAsync("spreadsheet.xlsx", "application/vnd.ms-excel", data);
+    }
+}

@@ -1,0 +1,9 @@
+﻿main {
+    max-width: 800px;
+    height: 600px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}

@@ -1,0 +1,16 @@
+﻿<label tabindex="0">
+    <InputFile OnChange="OnFileSelected" accept="@Accept" />
+    @ChildContent
+</label>
+
+@code
+{
+    [Parameter]
+    public string? Accept { get; set; }
+
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnFileSelected { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

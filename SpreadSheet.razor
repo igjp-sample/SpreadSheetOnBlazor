@@ -1,0 +1,104 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+@* Ignite UI for jQuery によるスプレッドシートコンポーネントをマウントする DOM 要素です。 *@
+<div @ref="_spreadsheet"></div>
+
+@code
+{
+    /// <summary>
+    /// Spreadsheet コンポーネントの幅を設定します。
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; } = "100%";
+
+    /// <summary>
+    /// Spreadsheet コンポーネントの高さを設定します。
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; } = "100%";
+
+    private string? _prevWidth;
+
+    private string? _prevHeight;
+
+    private bool _initialized;
+
+    /// <summary>
+    /// スプレッドシートコンポーネントをマウントする先の DOM 要素への参照です。
+    /// </summary>
+    private ElementReference _spreadsheet;
+
+    private IJSObjectReference? _jsModule;
+
+    private async ValueTask<IJSObjectReference> GetJSModuleAsync() =>
+        _jsModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./SpreadSheet.razor.js");
+
+    /// <summary>
+    /// レンダリング完了時に呼び出されるライフサイクルメソッドです。<br/>
+    /// Ignite UI for jQuery の Spreadsheet コンポーネントを初期化・インスタンス化します。
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _prevWidth = Width;
+            _prevHeight = Height;
+
+            var jsModule = await GetJSModuleAsync();
+            await jsModule.InvokeVoidAsync("initialize", _spreadsheet, new { Width, Height });
+            _initialized = true;
+        }
+    }
+
+    /// <summary>
+    /// パラメーター設定のライフサイクルメソッドです。<br/>
+    /// Width や Height などのパラメーター指定値に変更があった場合は、Ignite UI for jQuery の Spreadsheet コンポーネントに変更後のそれらパラメーターを反映します。
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (!_initialized) return;
+
+        var jsModule = await GetJSModuleAsync();
+
+        if (_prevWidth != Width)
+        {
+            _prevWidth = Width;
+            await jsModule.InvokeVoidAsync("setOption", _spreadsheet, "width", Width);
+        }
+
+        if (_prevHeight != Height)
+        {
+            _prevHeight = Height;
+            await jsModule.InvokeVoidAsync("setOption", _spreadsheet, "height", Height);
+        }
+    }
+
+    /// <summary>
+    /// 引数に指定された byte 配列を、.xlsx 形式のワークブックであるとして、Spreadsheet に読み込みます。
+    /// </summary>
+    public async ValueTask LoadAsync(byte[] data)
+    {
+        var jsModule = await GetJSModuleAsync();
+        await jsModule.InvokeVoidAsync("load", _spreadsheet, data);
+    }
+
+    /// <summary>
+    /// Spreadsheet の内容を、.xlsx 形式のワークブックで取得し、byte 配列で返します。
+    /// </summary>
+    public async ValueTask<byte[]> SaveAsync()
+    {
+        var jsModule = await GetJSModuleAsync();
+        var data = await jsModule.InvokeAsync<byte[]>("save", _spreadsheet);
+        return data;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule != null)
+        {
+            try { await _jsModule.DisposeAsync(); } catch (JSDisconnectedException) { }
+        }
+    }
+}
